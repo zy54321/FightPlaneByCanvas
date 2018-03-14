@@ -232,11 +232,11 @@
                     giftArr[k].draw();
                 }
             }
-            //战机和敌机碰撞
+            //战机和敌机碰撞游戏结束
             for (var a = 0; a < enemyArr.length; a++) {
                 if (isTouch(thePlane,enemyArr[a])) {
-                    //window.location.reload();
-                    alert("游戏结束!")
+                    window.location.reload();
+                    //alert("游戏结束!")
                 }
             }
             //当战机和礼包相碰
