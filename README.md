@@ -1,3 +1,0 @@
-# FightPlaneByCanvas
-通过canvas实现微信打飞机小游戏
-通过canvas实现微信小游戏打飞机
