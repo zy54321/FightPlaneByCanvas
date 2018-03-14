@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    function abc() {
+        var a = 10;
+        console.log(a);
+    }
+    abc();
+    // console.log(a); //显示undefined,因为a在函数作用域内,调用函数完成后,内存就消掉a的值,所以打印报错
+
+    /*function aa() {
+        var b = 100;
+        function bb() {
+            console.log(b);
+        }
+        return bb;
+    }
+    var c = aa();
+    console.log(c);
+    c();*/
+    //闭包让一个值一直存在内存里
+
+    function aa() {
+        var b = 100;
+        return function () {
+            console.log(b);
+        }
+        return bb;
+    }
+    var c = aa();
+    console.log(c);
+    c();
+
+    //闭包
+    var c = (function () {
+        var b = 100;
+        return function () {
+            console.log(b);
+        }
+        return bb;
+    })()
+</script>
+</body>
+</html>

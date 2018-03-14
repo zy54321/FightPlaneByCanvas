@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+
+    <script>
+        var oCanvas = document.getElementById("myCanvas");
+        oCanvas.width = document.documentElement.clientWidth;
+        oCanvas.height = document.documentElement.clientHeight;
+        var ctx = oCanvas.getContext("2d");
+
+        //类
+        function BckImg() {
+            this.y1 = 0;
+            this.y2 = -oCanvas.height;
+            this.w = oCanvas.width;
+            this.h = oCanvas.height
+            this.src = "img/background.png";
+        }
+
+        //绘制图片方法
+        var theImg1 = new Image();
+        BckImg.prototype.draw = function () {
+            theImg1.src = this.src;
+            var _this = this;
+            theImg1.onload = function () {
+                ctx.beginPath();
+                ctx.drawImage(this,0,_this.y1,_this.w,_this.h);
+                ctx.beginPath();
+                ctx.drawImage(this,0,_this.y2,_this.w,_this.h);
+            }
+        }
+
+        //图片移动方法
+        BckImg.prototype.move = function () {
+            this.y1 += 1;
+            this.y2 += 1;
+            if (this.y2 > 0) {
+                this.y1 = 0;
+                this.y2 = -oCanvas.height;
+            }
+        }
+        var BackImg = new BckImg();
+
+        //定时器
+        setInterval(function () {
+            // ctx.clearRect(0,0,oCanvas.width,oCanvas.height)
+            BackImg.draw();
+            BackImg.move();
+        },10)
+
+    </script>
+</body>
+</html>

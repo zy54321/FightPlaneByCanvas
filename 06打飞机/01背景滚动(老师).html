@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+
+<script>
+    var oCanvas = document.getElementById("myCanvas");
+    oCanvas.width = document.documentElement.clientWidth;
+    oCanvas.height = document.documentElement.clientHeight;
+    var ctx = oCanvas.getContext("2d");
+
+    var bgImg = new Image();
+    bgImg.src = "img/background.png";
+
+    var bgY = 0;
+    drawBg();
+    function drawBg() {
+        ctx.clearRect(0,0,oCanvas.width,oCanvas.height);
+        ctx.drawImage(bgImg,0,bgY,oCanvas.width,oCanvas.height);
+        ctx.drawImage(bgImg,0,-oCanvas.height + bgY,oCanvas.width,oCanvas.height);
+        bgY++;
+        if (bgY > oCanvas.height) {
+            bgY = 0;
+        }
+        requestAnimationFrame(drawBg);
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+        div{
+            width: 100px;
+            height: 100px;
+            background: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="all"></div>
+    <script>
+        var oAll = document.getElementById("all");
+        //touch 事件对应pc端的鼠标事件
+        //键盘事件,表单事件等,移动端和pc端相同
+        //addEventListener 可以添加许多不同类型事件，添加的事件不会覆盖已存在的事件。
+        oAll.addEventListener("touchmove",function (ev) {
+            var ev = ev || window.event;
+            var finger = ev.touches[0];
+            //按下移动
+            var pageX = finger.pageX;
+            console.log(pageX);
+        })
+        console.log(oAll)
+
+        oAll.addEventListener("touchstart",function (ev) {
+            var ev = ev || window.event;
+            var finger = ev.touches[0];
+            console.log(finger);
+            console.log(ev.touches);
+
+            //手指距离屏幕的距离
+            var screenX = finger.screenX;
+            var screenY = finger.screenY;
+
+            //手指距离页面的距离
+            var pageX = finger.pageX;
+            var pageY = finger.pageY;
+
+            //手指距离可视窗口的距离
+            var clientX = finger.clientX;
+            var clientY = finger.clientY;
+
+            //点击响应
+            console.log("touchstart");
+        })
+
+        oAll.addEventListener("touchend",function () {
+            //抬起响应
+            console.log("touchend");
+        })
+
+
+
+    </script>
+</body>
+</html>

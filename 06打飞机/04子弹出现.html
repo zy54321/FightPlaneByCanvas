@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+    var oCanvas = document.getElementById("myCanvas");
+
+    oCanvas.width = document.documentElement.clientWidth;
+    oCanvas.height = document.documentElement.clientHeight;
+
+    var ctx = oCanvas.getContext("2d");
+
+    //实现逻辑之前，将所有图片加载完成
+
+    var imgSrc = {
+        "bgImg": "img/background.png",
+        "plane1": "img/hero1.png",
+        "plane2": "img/hero2.png",
+        "bullet1":"img/bullet1.png",
+        "bullet2":"img/bullet2.png"
+    }
+
+    //图片的个数 和 加载完成的图片的个数相同
+
+    //要加载图片的个数
+    var imgCount = 0;
+    for (var name in imgSrc) {
+        imgCount++;
+    }
+    //存放img对象 key值与imgSrc相同
+    var imgObj = {};
+    //记录加载完成的图片个数
+    var completeN = 0;
+    //创建图片对象
+    for (var keyName in imgSrc) {
+        var theSrc = imgSrc[keyName];
+        var theImg = new Image();
+        theImg.src = theSrc;
+
+        theImg.name = keyName;
+        theImg.onload = function (ev) {
+            imgObj[this.name] = this;
+            completeN++;
+            //如果相等说明图片加载完成
+            if(completeN == imgCount){
+                complete();
+            }
+        }
+
+
+        /*  闭包实现
+       theImg.onload = (function (name) {
+            return function () {
+                imgObj[name] = this;
+                completeN++;
+                //如果相等说明图片加载完成
+                if(completeN == imgCount){
+                    complete();
+                }
+            }
+        })(keyName)*/
+
+
+    }
+
+    var thePlane = null;
+    //子弹的数组
+    var bulletArr = [];
+    function complete() {
+
+        var bgImg = imgObj["bgImg"];
+        var plane1 = imgObj["plane1"];
+        var plane2 = imgObj["plane2"];
+        var bullet1 = imgObj["bullet1"];
+
+        var bgY = 0;
+        function drawBg() {
+            ctx.drawImage(bgImg,0,bgY,oCanvas.width,oCanvas.height);
+            ctx.drawImage(bgImg,0,-oCanvas.height + bgY,oCanvas.width,oCanvas.height);
+            bgY++;
+            if (bgY == oCanvas.height ){
+                bgY = 0;
+            }
+        }
+
+        thePlane = new Plane(plane1);
+        var temp = 0;//记录定时器走过的次数
+        drawAll();
+        function drawAll() {
+            ctx.clearRect(0,0,oCanvas.width,oCanvas.height);
+            //绘制背景
+            drawBg();
+            //绘制飞机
+            thePlane.draw();
+            temp++;
+            if(temp % 10 == 0){
+                thePlane.img = plane2;
+            } else  {
+                thePlane.img = plane1;
+            }
+            //绘制子弹
+            if (temp % 40 == 0) {
+                var theBullet = new Bullet(bullet1,2,thePlane);
+                bulletArr.push(theBullet);
+            }
+            for (var i = 0; i < bulletArr.length; i++) {
+                bulletArr[i].move();
+                if (bulletArr[i].isClear()) {
+                    bulletArr.splice(i,1);
+                    i--;
+                } else {
+                    bulletArr[i].draw();
+                }
+            }
+
+            requestAnimationFrame(drawAll);
+        }
+
+
+    }
+
+    //战机对象类
+    function Plane(planeImg) {
+        this.img = planeImg;
+        this.w = planeImg.width;
+        this.h = planeImg.height;
+        this.x = (oCanvas.width - this.w)/2;
+        this.y = oCanvas.height - this.h - 10;
+
+    }
+    //战机绘制
+    Plane.prototype.draw = function () {
+        ctx.beginPath();
+        ctx.drawImage(this.img,this.x,this.y,this.w,this.h);
+    }
+
+    //子弹对象类
+    function Bullet(img,speed,plane) {
+        this.img = img;
+        this.w = img.width;
+        this.h = img.height;
+        this.x = plane.x + plane.w/2 - this.w/2;
+        this.y = plane.y;
+        this.speed = speed;
+    }
+    //子弹绘制
+    Bullet.prototype.draw = function () {
+        ctx.beginPath();
+        ctx.drawImage(this.img,this.x,this.y,this.w,this.h);
+    }
+    //子弹运动
+    Bullet.prototype.move = function () {
+        this.y -= this.speed;
+    }
+    //屏幕外清除
+    Bullet.prototype.isClear = function () {
+        return this.y < -this.h;
+    }
+
+    //start 判断手指按下的点是否在飞机上
+    document.addEventListener("touchstart",function (ev) {
+        var ev = ev || window.event;
+        //获取按下点的位置
+        var touchX = ev.touches[0].pageX;
+        var touchY = ev.touches[0].pageY;
+        //手指距离飞机左侧的距离
+        var lessX = touchX - thePlane.x;
+        var lessY = touchY - thePlane.y;
+
+        var a = touchY > thePlane.y;
+        var b = touchY < thePlane.y + thePlane.h;
+        var c = touchX > thePlane.x;
+        var d = touchX < thePlane.x + thePlane.w;
+        if (a && b && c && d) {
+            document.addEventListener("touchmove",move);
+        }
+        function move() {
+            var ev = ev || window.event;
+            var moveX = ev.touches[0].pageX;
+            var moveY = ev.touches[0].pageY;
+            thePlane.x = moveX - lessX;
+            thePlane.y = moveY - lessY;
+        }
+        document.addEventListener("touchend",function (ev2) {
+            document.removeEventListener("touchmove",move);
+        })
+    })
+
+
+</script>
+</body>
+</html>

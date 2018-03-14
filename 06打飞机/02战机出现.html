@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+
+<script>
+    var oCanvas = document.getElementById("myCanvas");
+    oCanvas.width = document.documentElement.clientWidth;
+    oCanvas.height = document.documentElement.clientHeight;
+    var ctx = oCanvas.getContext("2d");
+
+    //背景滚动
+    /*var bgImg = new Image();
+    bgImg.src = "img/background.png";
+    var bgY = 0;
+    drawBg();
+    function drawBg() {
+        ctx.clearRect(0,0,oCanvas.width,oCanvas.height);
+        ctx.drawImage(bgImg,0,bgY,oCanvas.width,oCanvas.height);
+        ctx.drawImage(bgImg,0,-oCanvas.height + bgY,oCanvas.width,oCanvas.height);
+        bgY++;
+        if (bgY > oCanvas.height) {
+            bgY = 0;
+        }
+        requestAnimationFrame(drawBg);
+    }*/
+
+    //实现逻辑之前,将所有图片加载完成
+    var imgSrc = {
+        "bgImg":"img/background.png",
+        "plane1":"img/hero1.png",
+        "plane2":"img/hero2.png",
+        "bullet1":"img/bullet1.png",
+        "bullet2":"img/bullet2.png",
+        "small":"img/enemy1_fly_1.png",
+        "middle":"img/enemy3_fly_1.png",
+        "big":"img/enemy2_fly_1.png",
+        "bomb":"img/bomb.png"
+    }
+
+    //图片的个数和加载完成的图片的个数相同
+    //要加载图片的个数
+    var imgCount = 0;
+    for (var name in imgSrc) {
+        imgCount++;
+    }
+    //存放img对象  key值与imgSrc相同
+    var imgObj = {};
+    //记录加载完成的图片个数
+    var completeN = 0;
+    //创建图片对象
+    for (var keyName in imgSrc) {
+        var theSrc = imgSrc[keyName];
+        var theImg = new Image();
+        theImg.src = theSrc;
+        //自定义属性方法
+        theImg.name = keyName;
+        theImg.onload = function (ev) {
+            imgObj[this.name] = this;
+            completeN++;
+            //如果相同说明图片加载完成
+            if (completeN == imgCount) {
+                complete();
+            }
+        }
+        /* 闭包方法实现
+        theImg.onload = (function (name) {
+            return function () {
+                imgObj[name] = this;
+                completeN++;
+                //如果相同说明图片加载完成
+                if (completeN == imgCount) {
+                    complete();
+                }
+            }
+        })(keyName)*/
+    }
+
+    function complete() {
+        //背景图片
+        var bgImg = imgObj["bgImg"];
+        //战机图片
+        var plane1 = imgObj["plane1"];
+        var plane2 = imgObj["plane2"];
+        //子弹图片
+        var bullet1 = imgObj["bullet1"];
+        var bullet2 = imgObj["bullet2"];
+        //敌机图片
+        var small = imgObj["small"];
+        var middle = imgObj["middle"];
+        var big = imgObj["big"];
+
+
+
+        //战机对象
+        var thePlane = new Plane(plane1,plane2);
+        drawAll();
+        //战机移动
+        thePlane.planeMove();
+
+
+
+        function drawAll() {
+            //自动清空画布,方便循环绘制画布
+            ctx.clearRect(0,0,oCanvas.width,oCanvas.height);
+
+            //绘制背景
+            drawBg();
+
+            //小型敌机每随机次创建一个对象
+            smallNum++;
+            if (smallNum % smallFre[getRandomNum(0,9)] == 0) {
+                var theSmall = new enemyPlane(small,middle,big);
+                smallPlane.push(theSmall);
+
+            }
+            for (var g = 0; g < smallPlane.length; g++) {
+                //子弹撞小型敌机
+                for (var i = 0; i < bulletArr.length; i++) {
+                    if (smallPlane.length != 0) {
+                        if (bulletArr[i]["y"] < smallPlane[g]["y1"] + smallPlane[g]["h1"] && bulletArr[i]["x"] > smallPlane[g]["x1"] && bulletArr[i]["x"] < smallPlane[g]["x1"] + smallPlane[g]["w1"] && bulletArr[i]["y"] > smallPlane[g]["y1"]) {
+                            boomTimsSmall++;
+                            bulletArr.splice(i,1);
+                            if (boomTimsSmall == 2) {
+                                boomTimsSmall = 0;
+                                smallPlane[g]["w1"] = 0;
+                            }
+                        }
+                    }
+                }
+                //小型敌机出屏幕外清除
+                if (smallPlane[g].smallClear()) {
+                    smallPlane.splice(g,1);
+                    g--;
+                } else {
+                    smallPlane[g].drawSmall();
+                }
+            }
+            //中型飞机每随机次创建一个对象
+            middleNum++;
+            if (middleNum % middleFre[getRandomNum(0,9)] == 0) {
+                var theMiddle = new enemyPlane(small,middle,big);
+                middlePlane.push(theMiddle);
+            }
+            for (var j = 0; j < middlePlane.length; j++) {
+                //子弹撞中型敌机
+                for (var i = 0; i < bulletArr.length; i++) {
+                    if (middlePlane.length != 0) {
+                        if (bulletArr[i]["y"] < middlePlane[j]["y2"] + middlePlane[j]["h2"] && bulletArr[i]["x"] > middlePlane[j]["x2"] && bulletArr[i]["x"] < middlePlane[j]["x2"] + middlePlane[j]["w2"] && bulletArr[i]["y"] > middlePlane[j]["y2"]) {
+                            boomTimesBig++;
+                            bulletArr.splice(i,1);
+                            if (boomTimesBig == 5) {
+                                boomTimesBig = 0;
+                                middlePlane[j]["w2"] = 0;
+                            }
+                        }
+                    }
+                }
+                //屏幕外清除
+                if (middlePlane[j].middleClear()) {
+                    middlePlane.splice(j,1);
+                    j--;
+                } else {
+                    middlePlane[j].drawMiddle();
+                }
+            }
+            //大型飞机每随机次创建一个对象
+            bigNum++;
+            if (bigNum % bigFre[getRandomNum(0,9)] == 0) {
+                var theBig = new enemyPlane(small,middle,big);
+                bigPlane.push(theBig);
+                // console.log(bigPlane)
+
+            }
+            for (var k = 0; k < bigPlane.length; k++) {
+                //子弹撞大型敌机
+                for (var i = 0; i < bulletArr.length; i++) {
+                    if (bigPlane.length != 0) {
+                        if (bulletArr[i]["y"] < bigPlane[k]["y3"] + bigPlane[k]["h3"] && bulletArr[i]["x"] > bigPlane[k]["x3"] && bulletArr[i]["x"] < bigPlane[k]["x3"] + bigPlane[k]["w3"] && bulletArr[i]["y"] > bigPlane[k]["y3"]) {
+                            boomTimes++;
+                            bulletArr.splice(i,1);
+                            if (boomTimes == 10) {
+                                boomTimes = 0;
+                                bigPlane[k]["w3"] = 0;
+                            }
+                        }
+                    }
+                }
+                //屏幕外清除
+                if (bigPlane[k].bigClear()) {
+                    bigPlane.splice(k,1);
+                    k--;
+                } else {
+                    bigPlane[k].drawBig();
+                }
+
+            }
+
+            //战机绘制
+            thePlane.drawPlane();
+            planeX = thePlane.x;
+            planeY = thePlane.y;
+            //子弹,每隔20次创建一个对象
+            bulletNum++;
+            if (bulletNum % 5 == 0) {
+                var theBullet = new Bullet(bullet1,bullet2);
+                bulletArr.push(theBullet);
+            }
+            for (var i = 0; i < bulletArr.length; i++) {
+                if (bulletArr[i].clear()) {
+                    bulletArr.splice(i,1);
+                    i--;
+                } else {
+                    bulletArr[i].drawBullet();
+                }
+            }
+            requestAnimationFrame(drawAll);
+        }
+    }
+
+    //背景滚动
+    var bgY = 0;
+    function drawBg() {
+        ctx.drawImage(imgObj["bgImg"],0,bgY,oCanvas.width,oCanvas.height);
+        ctx.drawImage(imgObj["bgImg"],0,-oCanvas.height + bgY,oCanvas.width,oCanvas.height);
+        bgY++;
+        if (bgY > oCanvas.height) {
+            bgY = 0;
+        }
+    }
+
+    //战机对象类
+    function Plane (planeImg1,planeImg2) {
+        this.img1 = planeImg1;
+        this.img2 = planeImg2;
+        this.w = planeImg1.width;
+        this.h = planeImg1.height;
+        this.x = (oCanvas.width - this.w + 7) / 2;
+        this.y = oCanvas.height - this.h - 5;
+    }
+    //战机绘制
+    var temp = 0;
+    Plane.prototype.drawPlane = function () {
+        ctx.beginPath();
+        temp++;
+        if (temp % 10 == 0) {
+            ctx.drawImage(this.img1,this.x,this.y,this.w,this.h);
+            ctx.strokeRect(this.x,this.y,this.w,this.h);
+            // ctx.globalCompositeOperation = "source-over"
+        } else {
+            ctx.drawImage(this.img2,this.x,this.y,this.w,this.h);
+            ctx.strokeRect(this.x,this.y,this.w,this.h);
+            // ctx.globalCompositeOperation = "source-over"
+        }
+    }
+    //战机拖动
+    Plane.prototype.planeMove = function () {
+        var _this = this;
+        document.addEventListener("touchstart",function (ev) {
+            var ev = ev || window.event;
+            var finger = ev.touches[0];
+            var fingerX = finger.pageX;
+            var fingerY = finger.pageY;
+            _this.x = fingerX - _this.w / 2;
+            _this.y = fingerY - _this.h / 2;
+            document.addEventListener("touchmove",function (ev) {
+                var ev = ev || window.event;
+                var finger = ev.touches[0];
+                var fingerX = finger.pageX;
+                var fingerY = finger.pageY;
+                _this.x = fingerX - _this.w / 2;
+                _this.y = fingerY - _this.h / 2;
+                //边界处理
+                if (_this.x - _this.w / 2 < 0) {
+                    _this.x = 0;
+                }
+                if (_this.x + _this.w / 2 > oCanvas.width) {
+                    _this.x = oCanvas.width - _this.w;
+                    console.log("_this.x")
+                }
+                if (_this.y - _this.h / 2 < 0) {
+                    _this.y = 0;
+                }
+                if (_this.y + _this.h / 2 > oCanvas.height) {
+                    _this.y = oCanvas.height - _this.h;
+                }
+                //和敌机碰撞
+                for (var i = 0; i < smallPlane.length; i++) {
+                    if (smallPlane.length != 0) {
+                        if (_this.x > smallPlane[i]["x1"] && _this.x < smallPlane[i]["x1"] + smallPlane[i]["w1"] && _this.y < smallPlane[i]["y1"] + smallPlane[i]["h1"] && _this.y > smallPlane[i]["y1"]) {
+                            window.location.reload();
+                        }
+                    }
+                }
+            })
+
+        })
+    }
+
+    //子弹对象类
+    var planeX = 0; //存放获取的战机X位置
+    var planeY = 0; //存放获取的战机Y位置
+    function Bullet(bullet1,bullet2) {
+        this.img1 = bullet1;
+        this.img2 = bullet2;
+        this.w1 = bullet1.width;
+        this.w2 = bullet2.width;
+        this.h1 = bullet1.height;
+        this.h2 = bullet2.height;
+        this.x = planeX + (parseInt(66 - this.w1)) / 2;
+        this.x2 = planeX + (parseInt(66 - this.w2)) / 2;
+        this.y = planeY;
+    }
+    //子弹计数
+    var bulletNum = 0;
+    //子弹对象数组
+    var bulletArr = [];
+    //绘制子弹
+    Bullet.prototype.drawBullet = function () {
+        this.y -= 10;
+        ctx.drawImage(this.img1,this.x,this.y,this.w1,this.h1);
+        /*if (bulletNum > 2200 && bulletNum < 4499) {
+            ctx.drawImage(this.img2,this.x2,this.y,this.w2,this.h2);
+        } else if (bulletNum > 4500) {
+            ctx.drawImage(this.img1,this.x,this.y,this.w1,this.h1);
+            ctx.drawImage(this.img2,this.x2,this.y,this.w2,this.h2);
+        } else {
+            ctx.drawImage(this.img1,this.x,this.y,this.w1,this.h1);
+        }*/
+
+    }
+    //子弹屏幕外清除
+    Bullet.prototype.clear = function () {
+        return this.y < 0;
+    }
+
+    //敌机enemyPlane 出现
+    function enemyPlane(small,middle,big) {
+        this.img1 = small;
+        this.img2 = middle;
+        this.img3 = big;
+        this.w1 = small.width;
+        this.w2 = middle.width;
+        this.w3 = big.width;
+        this.h1 = small.height;
+        this.h2 = middle.height;
+        this.h3 = big.height;
+        this.x1 = getRandomNum(20,oCanvas.width - this.w1 - 20);
+        this.x2 = getRandomNum(20,oCanvas.width - this.w2 - 20);
+        this.x3 = getRandomNum(20,oCanvas.width - this.w3 - 20);
+        this.y1 = -this.h1;
+        this.y2 = -this.h2;
+        this.y3 = -this.h3;
+        this.s = 2;
+        this.m = 2;
+        this.b = 1;
+    }
+    //敌机绘制
+    //小飞机及对象数组
+    var smallPlane = [];
+    enemyPlane.prototype.drawSmall = function () {
+        this.y1 += this.s;
+        ctx.drawImage(this.img1,this.x1,this.y1,this.w1,this.h1);
+        ctx.strokeRect(this.x1,this.y1,this.w1,this.h1);
+    }
+    //小飞机计数
+    var smallNum = 0;
+    //小飞机绘制频率限制
+    var smallFre = [90,98,102,114,128,132,112,136,130,134];
+    //小飞机中弹次数
+    var boomTimsSmall = 0;
+
+    //中飞机及对象数组
+    var middlePlane = [];
+    enemyPlane.prototype.drawMiddle = function () {
+        this.y2 += this.m;
+        ctx.drawImage(this.img2,this.x2,this.y2,this.w2,this.h2);
+    }
+    //中飞机计数
+    var middleNum = 0;
+    //中飞机绘制频率限制
+    var middleFre = [160,164,172,176,188,192,204,218,254,230];
+    //中飞机中弹次数
+    var boomTimes = 0;
+
+    //大飞机及对象数组
+    var bigPlane = [];
+    enemyPlane.prototype.drawBig = function () {
+        this.y3 += this.b;
+        ctx.drawImage(this.img3,this.x3,this.y3,this.w3,this.h3);
+    }
+    //大飞机计数
+    var bigNum = 0;
+    //大飞机绘制频率限制
+    var bigFre = [230,316,450,588,274,420,186,480,386,308];
+    //大飞机中弹次数
+    var boomTimesBig = 0;
+
+    //敌机屏幕外清除
+    enemyPlane.prototype.smallClear = function () {
+        return this.y1 > oCanvas.height;
+    }
+    enemyPlane.prototype.middleClear = function () {
+        return this.y2 > oCanvas.height;
+    }
+    enemyPlane.prototype.bigClear = function () {
+        return this.y3 > oCanvas.height;
+    }
+
+
+    //随机数
+    function getRandomNum(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+
+
+
+
+</script>
+</body>
+</html>
